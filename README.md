@@ -1,6 +1,6 @@
 # Node.js TypeScript Boilerplate
 
-A production-ready, bare-bones boilerplate for building typed Node.js Express servers with TypeScript.
+A production-ready, bare-bones boilerplate for building typed Node.js Express servers with TypeScript on the latest Node.js 24 LTS release line.
 
 ## Overview
 
@@ -10,7 +10,7 @@ This boilerplate provides a minimal yet structured foundation for creating scala
 
 - ✅ **TypeScript Support** - Full type safety and modern JavaScript features
 - ✅ **Express.js Framework** - Lightweight and flexible web server framework
-- ✅ **Development Environment** - Nodemon for hot-reload during development
+- ✅ **Development Environment** - `tsx watch` for fast TypeScript hot-reload during development
 - ✅ **Type Definitions** - Includes @types packages for Node.js and Express
 - ✅ **Environment Variables** - dotenv for managing configuration
 - ✅ **Production Ready** - Optimized build process and deployment configuration
@@ -20,12 +20,12 @@ This boilerplate provides a minimal yet structured foundation for creating scala
 - **Runtime:** Node.js
 - **Framework:** Express.js
 - **Language:** TypeScript
-- **Development:** Nodemon, ts-node
+- **Development:** tsx
 - **Configuration:** dotenv
 
 ## Prerequisites
 
-- Node.js (v14.0.0 or higher)
+- Node.js 24 LTS
 - npm or yarn package manager
 
 ## Installation
@@ -45,6 +45,7 @@ npm install
 ```
 PORT=3000
 NODE_ENV=development
+ENCRYPTION_KEY=12345678901234567890123456789012
 ```
 
 ## Usage
@@ -61,6 +62,12 @@ Compile TypeScript to JavaScript:
 npm run build
 ```
 
+### Test
+Run the verification script used by CI:
+```bash
+npm test
+```
+
 ### Production
 Run the compiled application:
 ```bash
@@ -71,13 +78,24 @@ npm start
 
 ```
 .
-├── src/
-│   └── server.ts          # Entry point
+├── controller/            # Request handlers
+├── middleware/            # Express middleware
+├── routes/                # API routes
+├── utils/                 # Shared helpers
+├── server.ts              # Entry point
 ├── dist/                  # Compiled JavaScript (auto-generated)
 ├── package.json           # Project dependencies and scripts
 ├── tsconfig.json          # TypeScript configuration
 └── README.md              # This file
 ```
+
+## Continuous Integration
+
+GitHub Actions verifies every push to `main` and `dev`, plus pull requests into `main`, by running:
+
+- `npm ci`
+- `npm test`
+- `npm run build`
 
 ## License
 
