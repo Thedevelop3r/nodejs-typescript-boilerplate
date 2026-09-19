@@ -45,6 +45,7 @@ npm install
 ```
 PORT=3000
 NODE_ENV=development
+ENCRYPTION_KEY=12345678901234567890123456789012
 ```
 
 ## Usage

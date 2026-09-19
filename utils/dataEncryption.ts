@@ -7,7 +7,13 @@ function getEncryptionKey(): crypto.CipherKey {
     throw new Error('ENCRYPTION_KEY environment variable is required');
   }
 
-  return encryptionKey;
+  const normalizedKey = Buffer.from(encryptionKey);
+
+  if (normalizedKey.length !== 32) {
+    throw new Error('ENCRYPTION_KEY must be exactly 32 bytes for aes-256-cbc');
+  }
+
+  return normalizedKey;
 }
 
 function encryptData(data: Record<string, unknown>, key: crypto.CipherKey) {
