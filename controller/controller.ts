@@ -9,7 +9,15 @@ export function ping(req: Request, res: Response) {
 
 export function signup(req: Request, res: Response) {
   const { email } = req.body;
-  const encryptEmail = encryptData({ email }, getEncryptionKey());
+
+  let encryptEmail;
+
+  try {
+    encryptEmail = encryptData({ email }, getEncryptionKey());
+  } catch {
+    res.status(500).json({ msg: 'Server configuration error!' });
+    return;
+  }
 
   res.json({
     email,
