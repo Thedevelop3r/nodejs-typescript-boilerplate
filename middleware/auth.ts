@@ -1,19 +1,18 @@
-import { Request, Response } from 'express';
-import { decryptData } from '../utils/dataEncryption';
+import { NextFunction, Request, Response } from 'express';
+import { decryptData, getEncryptionKey } from '../utils/dataEncryption';
 
-interface AuthenticatedRequest extends Request {
-  user: string; // replace string with the actual type of the user object
-}
-
-export async function auth(req: AuthenticatedRequest, res: Response, next: any) {
+export function auth(req: Request, res: Response, next: NextFunction): void {
   const signedKey = req.headers.signedkey;
-  if (!signedKey) return res.status(400).json({ msg: 'Not Authorized!' });
+
+  if (typeof signedKey !== 'string') {
+    res.status(400).json({ msg: 'Not Authorized!' });
+    return;
+  }
 
   try {
-    const decryptEmail = decryptData(signedKey as String, process.env.ENCRYPTION_KEY);
-    req.user = decryptEmail;
+    req.user = decryptData(signedKey, getEncryptionKey());
     next();
-  } catch (error) {
-    return res.status(400).json({ msg: 'Invalid Parameters!' });
+  } catch {
+    res.status(400).json({ msg: 'Invalid Parameters!' });
   }
 }
