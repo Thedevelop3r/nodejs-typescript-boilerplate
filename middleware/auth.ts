@@ -9,8 +9,17 @@ export function auth(req: Request, res: Response, next: NextFunction): void {
     return;
   }
 
+  let encryptionKey;
+
   try {
-    req.user = decryptData(signedKey, getEncryptionKey());
+    encryptionKey = getEncryptionKey();
+  } catch {
+    res.status(500).json({ msg: 'Server configuration error!' });
+    return;
+  }
+
+  try {
+    req.user = decryptData(signedKey, encryptionKey);
     next();
   } catch {
     res.status(400).json({ msg: 'Invalid Parameters!' });
