@@ -2,8 +2,9 @@ import express from 'express';
 import { Request, Response } from 'express';
 // import controller functions
 
-import { ping, signup, ipAddress } from '../controller/controller';
+import { logout, ping, signup, ipAddress } from '../controller/controller';
 import { auth } from '../middleware/auth';
+import { requirePermissions } from '../middleware/authorize';
 
 const router = express.Router();
 
@@ -13,7 +14,9 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/ping', ping);
 
-router.post('/ip', auth, ipAddress);
+router.post('/ip', auth, requirePermissions('profile:read'), ipAddress);
 router.post('/signup', signup);
+router.post('/login', signup);
+router.post('/logout', logout);
 
 export default router;

@@ -13,6 +13,8 @@ This boilerplate provides a minimal yet structured foundation for creating scala
 - ✅ **Development Environment** - `tsx watch` for fast TypeScript hot-reload during development
 - ✅ **Type Definitions** - Includes @types packages for Node.js and Express
 - ✅ **Environment Variables** - dotenv for managing configuration
+- ✅ **JWT + Cookie Auth** - Access token header plus signed HTTP-only session cookie
+- ✅ **Role-Based Permissions** - Reusable RBAC helpers for roles and permissions
 - ✅ **Production Ready** - Optimized build process and deployment configuration
 
 ## Tech Stack
@@ -22,6 +24,7 @@ This boilerplate provides a minimal yet structured foundation for creating scala
 - **Language:** TypeScript
 - **Development:** tsx
 - **Configuration:** dotenv
+- **Auth:** jsonwebtoken + cookie-parser
 
 ## Prerequisites
 
@@ -46,7 +49,11 @@ npm install
 PORT=3000
 NODE_ENV=development
 ENCRYPTION_KEY=12345678901234567890123456789012
+JWT_SECRET=replace-with-a-long-random-secret
+COOKIE_SECRET=replace-with-a-separate-long-random-secret
 ```
+
+`JWT_SECRET` and `COOKIE_SECRET` are recommended. If they are omitted, the boilerplate falls back to `ENCRYPTION_KEY` so the sample project still boots with a single secret in local development.
 
 ## Usage
 
@@ -67,6 +74,42 @@ Run the verification script used by CI:
 ```bash
 npm test
 ```
+
+## Auth API
+
+### `POST /api/signup` or `POST /api/login`
+
+Creates a demo authenticated session and returns a short-lived JWT access token while also setting a signed `auth_session` HTTP-only cookie.
+
+Example request:
+```json
+{
+  "email": "admin@example.com",
+  "role": "admin",
+  "permissions": ["reports:read"]
+}
+```
+
+Built-in roles:
+
+- `viewer` → `profile:read`
+- `editor` → `profile:read`, `profile:write`
+- `admin` → `profile:read`, `profile:write`, `user:manage`
+
+Any extra `permissions` you provide are merged with the role defaults.
+
+### `POST /api/ip`
+
+Protected example endpoint. It requires both:
+
+- an `Authorization` header carrying the JWT access token
+- the signed `auth_session` cookie issued by signup/login
+
+It also enforces the `profile:read` permission through the reusable authorization middleware.
+
+### `POST /api/logout`
+
+Clears the `auth_session` cookie.
 
 ### Production
 Run the compiled application:

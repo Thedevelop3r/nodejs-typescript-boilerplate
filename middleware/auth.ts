@@ -1,27 +1,41 @@
 import { NextFunction, Request, Response } from 'express';
-import { decryptData, getEncryptionKey } from '../utils/dataEncryption';
+import { verifyToken } from '../utils/auth';
+
+function getBearerToken(req: Request): string | undefined {
+  const authorization = req.headers.authorization;
+
+  if (!authorization?.startsWith('Bearer ')) {
+    return undefined;
+  }
+
+  return authorization.slice('Bearer '.length).trim();
+}
 
 export function auth(req: Request, res: Response, next: NextFunction): void {
-  const signedKey = req.headers.signedkey;
+  const accessToken = getBearerToken(req);
+  const sessionToken = req.signedCookies?.auth_session;
 
-  if (typeof signedKey !== 'string') {
-    res.status(400).json({ msg: 'Not Authorized!' });
-    return;
-  }
-
-  let encryptionKey;
-
-  try {
-    encryptionKey = getEncryptionKey();
-  } catch {
-    res.status(500).json({ msg: 'Server configuration error!' });
+  if (!accessToken || typeof sessionToken !== 'string') {
+    res.status(401).json({ msg: 'Authorization header and auth_session cookie are required!' });
     return;
   }
 
   try {
-    req.user = decryptData(signedKey, encryptionKey);
+    const accessUser = verifyToken(accessToken, 'access');
+    const sessionUser = verifyToken(sessionToken, 'session');
+
+    if (
+      accessUser.sessionId !== sessionUser.sessionId ||
+      accessUser.email !== sessionUser.email ||
+      accessUser.role !== sessionUser.role
+    ) {
+      res.status(401).json({ msg: 'Auth tokens do not match!' });
+      return;
+    }
+
+    req.user = accessUser;
     next();
   } catch {
-    res.status(400).json({ msg: 'Invalid Parameters!' });
+    res.status(401).json({ msg: 'Invalid auth token!' });
   }
 }
