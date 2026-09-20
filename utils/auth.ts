@@ -69,7 +69,10 @@ function buildAuthenticatedUser({
 }
 
 function signToken(user: AuthenticatedUser, type: TokenClaims['type']): string {
-  return jwt.sign({ ...user, type }, getAuthSecret(), { expiresIn: type === ACCESS_TOKEN_TYPE ? '15m' : '7d' });
+  return jwt.sign({ ...user, type }, getAuthSecret(), {
+    algorithm: 'HS256',
+    expiresIn: type === ACCESS_TOKEN_TYPE ? '15m' : '7d',
+  });
 }
 
 function issueAuthTokens(user: AuthenticatedUser) {
@@ -80,7 +83,9 @@ function issueAuthTokens(user: AuthenticatedUser) {
 }
 
 function verifyToken(token: string, expectedType: TokenClaims['type']): AuthenticatedUser {
-  const decoded = jwt.verify(token, getAuthSecret());
+  const decoded = jwt.verify(token, getAuthSecret(), {
+    algorithms: ['HS256'],
+  });
 
   if (typeof decoded !== 'object' || decoded === null) {
     throw new Error('Invalid token payload');

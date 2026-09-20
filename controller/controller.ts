@@ -9,21 +9,15 @@ import {
   issueAuthTokens,
 } from '../utils/auth';
 
-export function ping(req: Request, res: Response) {
-  res.json({
-    msg: 'pong',
-  });
-}
+function issueSession(req: Request, res: Response) {
+  const { email, role } = req.body;
 
-export function signup(req: Request, res: Response) {
+  if (typeof email !== 'string' || !email.trim()) {
+    res.status(400).json({ msg: 'A valid email is required!' });
+    return;
+  }
+
   try {
-    const { email, role } = req.body;
-
-    if (typeof email !== 'string' || !email.trim()) {
-      res.status(400).json({ msg: 'A valid email is required!' });
-      return;
-    }
-
     const user = buildAuthenticatedUser({
       email: email.trim().toLowerCase(),
       role,
@@ -51,8 +45,21 @@ export function signup(req: Request, res: Response) {
     }
 
     res.status(500).json({ msg: 'Server configuration error!' });
-    return;
   }
+}
+
+export function ping(req: Request, res: Response) {
+  res.json({
+    msg: 'pong',
+  });
+}
+
+export function signup(req: Request, res: Response) {
+  issueSession(req, res);
+}
+
+export function login(req: Request, res: Response) {
+  issueSession(req, res);
 }
 
 export function ipAddress(req: Request, res: Response) {
