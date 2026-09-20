@@ -1,12 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
+import cookieParser from 'cookie-parser';
 import express from 'express';
+import { csrf } from './middleware/csrf';
 import router from './routes/api';
+import { getCookieSecret } from './utils/auth';
 
 const app = express();
 
+app.use(cookieParser(getCookieSecret()));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(csrf);
 
 app.use('/api', router);
 
