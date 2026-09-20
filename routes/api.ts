@@ -6,7 +6,6 @@ import rateLimit from 'express-rate-limit';
 import { login, logout, ping, signup, ipAddress } from '../controller/controller';
 import { auth } from '../middleware/auth';
 import { requirePermissions } from '../middleware/authorize';
-import { csrf } from '../middleware/csrf';
 
 const router = express.Router();
 
@@ -19,7 +18,6 @@ router.get('/ping', ping);
 router.post(
   '/ip',
   rateLimit({ windowMs: 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false }),
-  csrf,
   auth,
   requirePermissions('profile:read'),
   ipAddress
@@ -37,7 +35,6 @@ router.post(
 router.post(
   '/logout',
   rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false }),
-  csrf,
   logout
 );
 

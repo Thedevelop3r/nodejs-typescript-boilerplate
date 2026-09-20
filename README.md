@@ -77,6 +77,8 @@ npm test
 
 ## Auth API
 
+> Breaking change: the previous `signedkey` header flow has been replaced. Protected routes now use the JWT + signed-cookie auth flow documented below.
+
 ### `POST /api/signup` or `POST /api/login`
 
 Creates a demo authenticated session and returns a short-lived JWT access token while also setting a signed `auth_session` HTTP-only cookie.
