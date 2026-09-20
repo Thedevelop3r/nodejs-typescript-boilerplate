@@ -15,6 +15,11 @@ export function auth(req: Request, res: Response, next: NextFunction): void {
   const accessToken = getBearerToken(req);
   const sessionToken = req.signedCookies?.auth_session;
 
+  if (sessionToken === false) {
+    res.status(401).json({ msg: 'Invalid session cookie!' });
+    return;
+  }
+
   if (!accessToken || typeof sessionToken !== 'string') {
     res.status(401).json({ msg: 'Authorization header and auth_session cookie are required!' });
     return;

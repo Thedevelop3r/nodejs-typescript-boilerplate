@@ -9,9 +9,9 @@ import { getCookieSecret } from './utils/auth';
 const app = express();
 
 app.use(cookieParser(getCookieSecret()));
-app.use(csrf);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(csrf);
 
 app.use('/api', router);
 

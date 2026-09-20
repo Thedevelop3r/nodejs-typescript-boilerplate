@@ -6,6 +6,8 @@ A production-ready, bare-bones boilerplate for building typed Node.js Express se
 
 This boilerplate provides a minimal yet structured foundation for creating scalable, maintainable Node.js applications using Express and TypeScript. It comes pre-configured with essential tooling and best practices to help you get started quickly.
 
+For a deeper guide on customizing and extending the project, see [`MANUAL.md`](./MANUAL.md).
+
 ## Features
 
 - ✅ **TypeScript Support** - Full type safety and modern JavaScript features
