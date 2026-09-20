@@ -2,15 +2,19 @@ import crypto from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 
 export function csrf(req: Request, res: Response, next: NextFunction): void {
-  const hasSessionCookie = req.headers.cookie?.includes('auth_session=');
   const signedSessionCookie = req.signedCookies?.auth_session;
 
-  if (!hasSessionCookie) {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
     next();
     return;
   }
 
-  if (typeof signedSessionCookie !== 'string') {
+  if (typeof signedSessionCookie === 'undefined') {
+    next();
+    return;
+  }
+
+  if (signedSessionCookie === false || typeof signedSessionCookie !== 'string') {
     res.status(403).json({ msg: 'Invalid session cookie!' });
     return;
   }
