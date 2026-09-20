@@ -1,9 +1,11 @@
 import crypto from 'crypto';
+import { CookieOptions } from 'express';
 import jwt from 'jsonwebtoken';
 import { AuthenticatedUser, ROLE_PERMISSIONS, UserRole } from '../types/auth';
 
 const ACCESS_TOKEN_TYPE = 'access';
 const SESSION_TOKEN_TYPE = 'session';
+const SESSION_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 interface TokenClaims extends AuthenticatedUser {
   type: typeof ACCESS_TOKEN_TYPE | typeof SESSION_TOKEN_TYPE;
@@ -49,35 +51,19 @@ function resolveUserRole(role?: string): UserRole {
   return role;
 }
 
-function resolvePermissions(role: UserRole, permissions?: unknown): string[] {
-  const basePermissions = getRolePermissions(role);
-
-  if (!permissions) {
-    return basePermissions;
-  }
-
-  if (!Array.isArray(permissions) || permissions.some((permission) => typeof permission !== 'string')) {
-    throw new Error('permissions must be an array of strings');
-  }
-
-  return [...new Set([...basePermissions, ...permissions])];
-}
-
 function buildAuthenticatedUser({
   email,
   role,
-  permissions,
 }: {
   email: string;
   role?: string;
-  permissions?: unknown;
 }): AuthenticatedUser {
   const resolvedRole = resolveUserRole(role);
 
   return {
     email,
     role: resolvedRole,
-    permissions: resolvePermissions(resolvedRole, permissions),
+    permissions: getRolePermissions(resolvedRole),
     sessionId: crypto.randomUUID(),
   };
 }
@@ -126,13 +112,68 @@ function hasPermissions(grantedPermissions: string[], requiredPermissions: strin
   return requiredPermissions.every((permission) => grantedPermissions.includes(permission));
 }
 
+function hasMatchingPermissions(
+  leftPermissions: string[],
+  rightPermissions: string[]
+): boolean {
+  if (leftPermissions.length !== rightPermissions.length) {
+    return false;
+  }
+
+  return leftPermissions.every((permission) => rightPermissions.includes(permission));
+}
+
+function buildCsrfToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function getCookieOptions(): CookieOptions {
+  return {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+  };
+}
+
+function getSessionCookieOptions(): CookieOptions {
+  return {
+    ...getCookieOptions(),
+    maxAge: SESSION_COOKIE_MAX_AGE,
+  };
+}
+
+function getSessionClearCookieOptions(): CookieOptions {
+  return getCookieOptions();
+}
+
+function getCsrfCookieOptions(): CookieOptions {
+  return {
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: SESSION_COOKIE_MAX_AGE,
+  };
+}
+
+function getCsrfClearCookieOptions(): CookieOptions {
+  return {
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+  };
+}
+
 export {
   ACCESS_TOKEN_TYPE,
   SESSION_TOKEN_TYPE,
   buildAuthenticatedUser,
+  buildCsrfToken,
   getCookieSecret,
+  getCsrfClearCookieOptions,
+  getCsrfCookieOptions,
   getRolePermissions,
+  getSessionClearCookieOptions,
+  getSessionCookieOptions,
   hasPermissions,
+  hasMatchingPermissions,
   issueAuthTokens,
   isUserRole,
   verifyToken,

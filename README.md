@@ -85,8 +85,7 @@ Example request:
 ```json
 {
   "email": "admin@example.com",
-  "role": "admin",
-  "permissions": ["reports:read"]
+  "role": "admin"
 }
 ```
 
@@ -96,7 +95,7 @@ Built-in roles:
 - `editor` → `profile:read`, `profile:write`
 - `admin` → `profile:read`, `profile:write`, `user:manage`
 
-Any extra `permissions` you provide are merged with the role defaults.
+Permissions are assigned server-side from the selected role.
 
 ### `POST /api/ip`
 
@@ -104,12 +103,13 @@ Protected example endpoint. It requires both:
 
 - an `Authorization` header carrying the JWT access token
 - the signed `auth_session` cookie issued by signup/login
+- an `x-csrf-token` header matching the `csrfToken` returned by signup/login
 
 It also enforces the `profile:read` permission through the reusable authorization middleware.
 
 ### `POST /api/logout`
 
-Clears the `auth_session` cookie.
+Clears the `auth_session` and `csrf_token` cookies. Like other cookie-backed POST routes, it is rate-limited and expects the matching `x-csrf-token` header.
 
 ### Production
 Run the compiled application:

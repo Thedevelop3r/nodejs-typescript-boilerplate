@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { verifyToken } from '../utils/auth';
+import { hasMatchingPermissions, verifyToken } from '../utils/auth';
 
 function getBearerToken(req: Request): string | undefined {
   const authorization = req.headers.authorization;
@@ -27,7 +27,8 @@ export function auth(req: Request, res: Response, next: NextFunction): void {
     if (
       accessUser.sessionId !== sessionUser.sessionId ||
       accessUser.email !== sessionUser.email ||
-      accessUser.role !== sessionUser.role
+      accessUser.role !== sessionUser.role ||
+      !hasMatchingPermissions(accessUser.permissions, sessionUser.permissions)
     ) {
       res.status(401).json({ msg: 'Auth tokens do not match!' });
       return;
